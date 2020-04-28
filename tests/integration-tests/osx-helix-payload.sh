@@ -16,7 +16,7 @@ cd $here/tools
 
 dotnet new tool-manifest
 
-dotnet tool install --version 1.0.0-ci --add-source .. Microsoft.DotNet.XHarness.CLI
+dotnet tool install --no-cache --version 1.0.0-ci --add-source .. Microsoft.DotNet.XHarness.CLI
 
 export XHARNESS_DISABLE_COLORED_OUTPUT=true
 export XHARNESS_LOG_WITH_TIMESTAMPS=true
