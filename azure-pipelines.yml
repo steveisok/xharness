@@ -47,132 +47,57 @@ stages:
       helixRepo: dotnet/xharness
 
       jobs:
-      - job: Windows_NT
-        pool:
-          ${{ if eq(variables._RunAsInternal, True) }}:
-            name: NetCoreInternal-Pool
-            queue: BuildPool.Server.Amd64.VS2019
-          ${{ if eq(variables._RunAsPublic, True) }}:
-            name: NetCorePublic-Pool
-            queue: BuildPool.Server.Amd64.VS2019.Open
-        strategy:
-          matrix:
-            Release:
-              _BuildConfig: Release
-            ${{ if eq(variables._RunAsPublic, True) }}:
-              Debug:
-                _BuildConfig: Debug
-        steps:
-        - ${{ if eq(variables._RunAsPublic, False) }}:
-          - script: eng\common\CIBuild.cmd
-              -configuration $(_BuildConfig)
-              -prepareMachine
-              $(_InternalBuildArgs)
-              /p:Test=false
-            name: Build
-            displayName: Build
-            condition: succeeded()
-
-        - ${{ if eq(variables._RunAsPublic, True) }}:
-          - script: eng\common\CIBuild.cmd
-              -configuration $(_BuildConfig)
-              -prepareMachine
-              $(_InternalBuildArgs)
-            name: Build
-            displayName: Build and run tests
-            condition: succeeded()
-
-          - task: PublishTestResults@2
-            displayName: 'Publish Unit Test Results'
-            inputs:
-              testResultsFormat: xUnit
-              testResultsFiles: '$(Build.SourcesDirectory)/artifacts/TestResults/**/*.xml'
-              mergeTestResults: true
-              searchFolder: $(system.defaultworkingdirectory)
-              testRunTitle: XHarness unit tests - $(Agent.JobName)
-            condition: succeededOrFailed()
-
-        - task: PublishBuildArtifacts@1
-          displayName: Publish Logs to VSTS
-          inputs:
-            PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)'
-            PublishLocation: Container
-            ArtifactName: $(Agent.Os)_$(Agent.JobName)
-          continueOnError: true
-          condition: always()
-
       - job: OSX
         pool:
           name: Hosted macOS
         strategy:
           matrix:
-            Release:
-              _BuildConfig: Release
-            ${{ if eq(variables._RunAsPublic, True) }}:
-              Debug:
-                _BuildConfig: Debug
+            Debug:
+              _BuildConfig: Debug
         steps:
-        - ${{ if eq(variables._RunAsPublic, False) }}:
-          - script: eng/common/cibuild.sh
-              --configuration $(_BuildConfig)
-              --prepareMachine
-              $(_InternalBuildArgs)
-              /p:Test=false
-            name: Build
-            displayName: Build
-            condition: succeeded()
+        - script: eng/common/cibuild.sh
+            --configuration $(_BuildConfig)
+            --prepareMachine
+            $(_InternalBuildArgs)
+            /p:Test=false
+          name: Build
+          displayName: Build
+          condition: succeeded()
 
-        - ${{ if eq(variables._RunAsPublic, True) }}:
-          - script: eng/common/cibuild.sh
-              --configuration $(_BuildConfig)
-              --prepareMachine
-              $(_InternalBuildArgs)
-            name: Build
-            displayName: Build and run tests
-            condition: succeeded()
+        - bash: |
+            targetDir=$(Build.ArtifactStagingDirectory)/OSX.IntegrationTests
+            mkdir $targetDir
+            cp tests/integration-tests/osx-helix-payload.sh $targetDir
+            cp artifacts/packages/$(_BuildConfig)/Shipping/Microsoft.DotNet.XHarness.CLI* $targetDir
+          displayName: Prepare IntegrationTests artifact
+          workingDirectory: $(Build.SourcesDirectory)
 
-          - task: PublishTestResults@2
-            displayName: 'Publish Unit Test Results'
-            inputs:
-              testResultsFormat: xUnit
-              testResultsFiles: '$(Build.SourcesDirectory)/artifacts/TestResults/**/*.xml'
-              mergeTestResults: true
-              searchFolder: $(system.defaultworkingdirectory)
-              testRunTitle: XHarness unit tests - $(Agent.JobName)
-            condition: succeededOrFailed()
+        - publish: $(Build.ArtifactStagingDirectory)/OSX.IntegrationTests
+          artifact: Microsoft.DotNet.XHarness.CLI.OSX.IntegrationTests
 
-        - task: PublishBuildArtifacts@1
-          displayName: Publish Logs to VSTS
-          inputs:
-            PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)'
-            PublishLocation: Container
-            ArtifactName: $(Agent.Os)_$(Agent.JobName)
-          continueOnError: true
-          condition: always()
+- stage: test
+  displayName: Run Integration Tests
+  dependsOn: build
+  jobs:
+  - job: integration_tests
+    displayName: iOS Integration Tests
+    pool:
+        name: Hosted macOS
+    steps:
+    - download: current
+      artifact: Microsoft.DotNet.XHarness.CLI.OSX.IntegrationTests
 
-- ${{ if eq(variables._RunAsInternal, True) }}:
-  - template: eng\common\templates\post-build\post-build.yml
-    parameters:
-      # Disabling signing validation until we can get the issues sorted. This should be re-enabled
-      # after https://github.com/dotnet/arcade/issues/5328 is resolved.
-      enableSigningValidation: false
-      enableSymbolValidation: true
-      # Reenable once this issue is resolved: https://github.com/dotnet/arcade/issues/2912
-      enableSourceLinkValidation: false
-      publishDependsOn:
-      - Validate
-      # This is to enable SDL runs part of Post-Build Validation Stage
-      SDLValidationParameters:
-        enable: false
-        continueOnError: false
-        params: ' -SourceToolsList @("policheck","credscan")
-        -TsaInstanceURL $(_TsaInstanceURL)
-        -TsaProjectName $(_TsaProjectName)
-        -TsaNotificationEmail $(_TsaNotificationEmail)
-        -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
-        -TsaBugAreaPath $(_TsaBugAreaPath)
-        -TsaIterationPath $(_TsaIterationPath)
-        -TsaRepositoryName "Arcade"
-        -TsaCodebaseName "Arcade"
-        -TsaPublish $True'
-
+    - template: /eng/common/templates/steps/send-to-helix.yml
+      parameters:
+        DisplayNamePrefix: Run Tests
+        HelixBaseUri: https://helix.int-dot.net/
+        HelixType: test/product/
+        IncludeDotNetCli: true
+        DotNetCliPackageType: sdk
+        DotNetCliVersion: 3.1.201
+        WaitForWorkItemCompletion: true
+        HelixTargetQueues: osx.1015.amd64.ios.open
+        Creator: xharness
+        WorkItemDirectory: $(Pipeline.Workspace)/Microsoft.DotNet.XHarness.CLI.OSX.IntegrationTests
+        WorkItemCommand: chmod 0755 osx-helix-payload.sh && ./osx-helix-payload.sh
+        WorkItemTimeout: 00:10:00
