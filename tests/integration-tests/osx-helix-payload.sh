@@ -6,8 +6,6 @@ set -ex
 
 here="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-mkdir $here/workdir
-
 # TODO - Call: dotnet xharness ios package ...
 # For now we download it:
 # curl "https://prvysokyexperiment.blob.core.windows.net/ios-apps/DummyTestProject.app.zip?sp=r&st=2020-04-22T09:38:37Z&se=2020-10-22T17:38:37Z&spr=https&sv=2019-10-10&sr=b&sig=h54BDrAf%2BenDyPbFhbCjj%2FiBLFMS4taHJ1dlrDDTxSs%3D" --output $here/app.zip
@@ -35,7 +33,6 @@ export XHARNESS_DISABLE_COLORED_OUTPUT=true
 export XHARNESS_LOG_WITH_TIMESTAMPS=true
 
 dotnet xharness ios test \
-    --working-directory="$here/workdir" \
     --output-directory="$HELIX_WORKITEM_UPLOAD_ROOT" \
     --app="$here/$app_name" \
     --targets=ios-simulator-64 \
