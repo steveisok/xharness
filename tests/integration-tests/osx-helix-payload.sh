@@ -42,4 +42,8 @@ dotnet xharness ios test \
     --timeout=400 \
     --launch-timeout=180
 
+result=$?
+
 echo '#################### Xharness end ####################'
+
+exit $result
