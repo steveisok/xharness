@@ -1,22 +1,11 @@
 #!/bin/bash
 
-echo '################### Xharness start ###################'
-
 set -ex
 
 here="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # TODO - Call: dotnet xharness ios package ...
 # For now we download it:
-# curl "https://prvysokyexperiment.blob.core.windows.net/ios-apps/DummyTestProject.app.zip?sp=r&st=2020-04-22T09:38:37Z&se=2020-10-22T17:38:37Z&spr=https&sv=2019-10-10&sr=b&sig=h54BDrAf%2BenDyPbFhbCjj%2FiBLFMS4taHJ1dlrDDTxSs%3D" --output $here/app.zip
-#app_name='DummyTestProject.app'
-
-# curl "https://prvysokyexperiment.blob.core.windows.net/ios-apps/Program.Tests.app.zip?sp=r&st=2020-04-23T18:57:58Z&se=2020-06-19T02:57:58Z&spr=https&sv=2019-10-10&sr=b&sig=BRVEKgPp2WMpJNSFpNssMg4oyMX8VbcsOwpRdgqbujY%3D" --output $here/app.zip
-#app_name='Program.Tests.app'
-
-# curl "https://prvysokyexperiment.blob.core.windows.net/ios-apps/com.xamarin.bcltests.BCL%20tests%20group%203.zip?sp=r&st=2020-04-24T14:50:45Z&se=2021-04-24T22:50:45Z&spr=https&sv=2019-10-10&sr=b&sig=vQglB83jgTQoSfI42qrjgzPzIDD03X2T2vD%2BicNtuQE%3D" --output $here/app.zip
-#app_name='com.xamarin.bcltests.BCL tests group 3.app'
-
 curl "https://xharnesstestapps.blob.core.windows.net/apps/System.Numerics.Vectors.Tests.app.zip?sp=r&st=2020-04-28T13:19:11Z&se=2021-04-28T21:19:11Z&spr=https&sv=2019-10-10&sr=b&sig=HMFFNt%2BmNCqw83sKwKRPmg7MW0DuMMe6%2F0ymAnakxiQ%3D" --output $here/app.zip
 app_name='System.Numerics.Vectors.Tests.app'
 
@@ -38,9 +27,3 @@ dotnet xharness ios test \
     --targets=ios-simulator-64 \
     --timeout=400 \
     --launch-timeout=180
-
-result=$?
-
-echo '#################### Xharness end ####################'
-
-exit $result
