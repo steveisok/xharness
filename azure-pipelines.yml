@@ -100,5 +100,5 @@ stages:
         HelixTargetQueues: osx.1015.amd64.ios.open
         Creator: xharness
         WorkItemDirectory: $(Pipeline.Workspace)/Microsoft.DotNet.XHarness.CLI.OSX.IntegrationTests
-        WorkItemCommand: chmod 0755 osx-helix-payload.sh && ./osx-helix-payload.sh
+        WorkItemCommand: ./osx-helix-payload.sh
         WorkItemTimeout: 00:10:00
