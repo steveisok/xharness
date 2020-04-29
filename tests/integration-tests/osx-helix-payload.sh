@@ -2,6 +2,13 @@
 
 set -ex
 
+# Clean the NuGet cache from the previous 1.0.0-ci version of the tool
+cache_dirs=`dotnet nuget locals All -l | cut -d':' -f 2 | tr -d ' '`
+while IFS= read -r line; do
+    rm -rfv "$line/microsoft.dotnet.xharness.cli"
+    rm -rfv "$line/Microsoft.DotNet.XHarness.CLI"
+done <<< "$cache_dirs"
+
 here="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # TODO - Call: dotnet xharness ios package ...
