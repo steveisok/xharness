@@ -2,12 +2,14 @@
 
 set -e
 
+version='1.0.0-ci'
+
 # Clean the NuGet cache from the previous 1.0.0-ci version of the tool
-echo "Cleaning the NuGet cache from the previous 1.0.0-ci version of the tool..."
+echo "Cleaning the NuGet cache from the previous version of the tool..."
 cache_dirs=`dotnet nuget locals All -l | cut -d':' -f 2 | tr -d ' '`
 while IFS= read -r path; do
-    rm -rfv "$path/microsoft.dotnet.xharness.cli"
-    rm -rfv "$path/Microsoft.DotNet.XHarness.CLI"
+    rm -rfv "$path/microsoft.dotnet.xharness.cli/$version"
+    rm -rfv "$path/Microsoft.DotNet.XHarness.CLI/$version"
 done <<< "$cache_dirs"
 
 set -x
@@ -26,7 +28,7 @@ cd $here/tools
 
 dotnet new tool-manifest
 
-dotnet tool install --no-cache --version 1.0.0-ci --add-source .. Microsoft.DotNet.XHarness.CLI
+dotnet tool install --no-cache --version $version --add-source .. Microsoft.DotNet.XHarness.CLI
 
 export XHARNESS_DISABLE_COLORED_OUTPUT=true
 export XHARNESS_LOG_WITH_TIMESTAMPS=true
