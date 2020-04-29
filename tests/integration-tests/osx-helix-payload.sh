@@ -1,13 +1,16 @@
 #!/bin/bash
 
-set -ex
+set -e
 
 # Clean the NuGet cache from the previous 1.0.0-ci version of the tool
+echo "Cleaning the NuGet cache from the previous 1.0.0-ci version of the tool..."
 cache_dirs=`dotnet nuget locals All -l | cut -d':' -f 2 | tr -d ' '`
-while IFS= read -r line; do
-    rm -rfv "$line/microsoft.dotnet.xharness.cli"
-    rm -rfv "$line/Microsoft.DotNet.XHarness.CLI"
+while IFS= read -r path; do
+    rm -rfv "$path/microsoft.dotnet.xharness.cli"
+    rm -rfv "$path/Microsoft.DotNet.XHarness.CLI"
 done <<< "$cache_dirs"
+
+set -x
 
 here="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -32,5 +35,5 @@ dotnet xharness ios test \
     --output-directory="$HELIX_WORKITEM_UPLOAD_ROOT" \
     --app="$here/$app_name" \
     --targets=ios-simulator-64 \
-    --timeout=400 \
-    --launch-timeout=180
+    --timeout=600 \
+    --launch-timeout=300

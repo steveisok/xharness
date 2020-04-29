@@ -101,4 +101,4 @@ stages:
         Creator: xharness
         WorkItemDirectory: $(Pipeline.Workspace)/Microsoft.DotNet.XHarness.CLI.OSX.IntegrationTests
         WorkItemCommand: ./osx-helix-payload.sh
-        WorkItemTimeout: 00:10:00
+        WorkItemTimeout: 00:12:00
