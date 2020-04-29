@@ -31,9 +31,18 @@ dotnet tool install --no-cache --version 1.0.0-ci --add-source .. Microsoft.DotN
 export XHARNESS_DISABLE_COLORED_OUTPUT=true
 export XHARNESS_LOG_WITH_TIMESTAMPS=true
 
+set +e
+
 dotnet xharness ios test \
     --output-directory="$HELIX_WORKITEM_UPLOAD_ROOT" \
     --app="$here/$app_name" \
     --targets=ios-simulator-64 \
     --timeout=600 \
     --launch-timeout=300
+
+result=$?
+
+echo "Remove empty logs"
+find "$HELIX_WORKITEM_UPLOAD_ROOT/" -size 0 -print -delete
+
+exit $result
