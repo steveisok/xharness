@@ -18,7 +18,7 @@ here="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # TODO - Call: dotnet xharness ios package ...
 # For now we download it:
-curl "https://xharnesstestapps.blob.core.windows.net/apps/System.Numerics.Vectors.Tests.app.zip?sp=r&st=2020-04-28T13:19:11Z&se=2021-04-28T21:19:11Z&spr=https&sv=2019-10-10&sr=b&sig=HMFFNt%2BmNCqw83sKwKRPmg7MW0DuMMe6%2F0ymAnakxiQ%3D" --output $here/app.zip
+curl -L --output $here/app.zip "https://netcorenativeassets.blob.core.windows.net/resource-packages/external/macos/test-ios-app/System.Numerics.Vectors.Tests.app.zip?sp=r&st=2020-05-04T13:23:20Z&se=2028-05-04T21:23:20Z&spr=https&sv=2019-10-10&sr=b&sig=7sKBDMZrlk%2FA58zlbaUYptb98kK7EacQpmJ9RxlLLrE%3D"
 app_name='System.Numerics.Vectors.Tests.app'
 
 tar -xzf app.zip
