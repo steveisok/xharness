@@ -5,6 +5,7 @@ set -e
 version='1.0.0-ci'
 
 # Clean the NuGet cache from the previous 1.0.0-ci version of the tool
+# TODO: This might have a better solution: https://github.com/dotnet/xharness/issues/123
 echo "Cleaning the NuGet cache from the previous version of the tool..."
 cache_dirs=`dotnet nuget locals All -l | cut -d':' -f 2 | tr -d ' '`
 while IFS= read -r path; do
@@ -36,12 +37,12 @@ export XHARNESS_LOG_WITH_TIMESTAMPS=true
 set +e
 
 dotnet xharness ios test \
-    --output-directory="$HELIX_WORKITEM_UPLOAD_ROOT" \
     --app="$here/$app_name" \
+    --output-directory="$HELIX_WORKITEM_UPLOAD_ROOT" \
     --targets=ios-simulator-64 \
     --communication-channel=Network \
-    --timeout=600 \
-    --launch-timeout=300
+    --timeout=800 \
+    --launch-timeout=500
 
 result=$?
 
