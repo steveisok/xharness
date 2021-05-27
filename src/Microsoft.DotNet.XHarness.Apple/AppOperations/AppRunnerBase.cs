@@ -65,6 +65,9 @@ namespace Microsoft.DotNet.XHarness.Apple
                 await _processManager.ExecuteCommandAsync("chmod", new[] { "+x", binaryPath }, _mainLog, TimeSpan.FromSeconds(10), cancellationToken: cancellationToken);
             }
 
+            // https://github.com/dotnet/xharness/issues/611 to make sure open doesn't flake
+            await _processManager.ExecuteCommandAsync("sync", new List<string>(), _mainLog, TimeSpan.FromSeconds(10), cancellationToken: cancellationToken);
+
             var arguments = new List<string>
             {
                 "-W",
